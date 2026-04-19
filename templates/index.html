@@ -264,6 +264,15 @@
             .controls-row { gap: 15px; }
             input[type="range"] { width: 80px; }
         }
+
+        /* Loading Spinner */
+        .fa-spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -276,8 +285,8 @@
             <span class="loop-tag">On Loop</span>
             <p>This website is made for relaxing and listening to 99 names of Allah without limits, ads. It will play with adjustable volume and on loop. You can close it any time or even open it on full screen for a better experience.</p>
             <div class="btn-group" style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                <button class="btn-start" onclick="startExperience()">
-                    <i class="fas fa-play"></i> Get Started
+                <button class="btn-start" id="start-btn" onclick="startExperience()">
+                    <i class="fas fa-play" id="start-icon"></i> <span id="start-text">Get Started</span>
                 </button>
                 <a href="https://github.com/omarikr/asmaulhusna" target="_blank" class="btn-start" style="background: rgba(255, 255, 255, 0.05);">
                     <i class="fab fa-github"></i> Source
@@ -292,7 +301,7 @@
             <i class="fas fa-times"></i>
         </button>
         
-        <video id="asma-video" loop playsinline>
+        <video id="asma-video" loop playsinline preload="auto">
             <source src="asmaulhusna.mp4" type="video/mp4">
             <source src="https://videotourl.com/videos/1776615984336-b74d9769-c48c-4f5c-8bb0-2cf379ec703c.mp4" type="video/mp4">
             Your browser does not support the video tag.
@@ -337,6 +346,7 @@
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         
         let controlTimeout;
+        let userPaused = true;
 
         // Initialize Media Session metadata
         function initMediaSession() {
@@ -351,13 +361,13 @@
                 });
 
                 const actionHandlers = [
-                    ['play', () => video.play()],
-                    ['pause', () => video.pause()],
+                    ['play', () => { userPaused = false; video.play(); }],
+                    ['pause', () => { userPaused = true; video.pause(); }],
                     ['seekbackward', () => seek(-5)],
                     ['seekforward', () => seek(5)],
                     ['previoustrack', () => seek(-10)],
                     ['nexttrack', () => seek(10)],
-                    ['stop', () => stopExperience()]
+                    ['stop', () => { userPaused = true; stopExperience(); }]
                 ];
 
                 for (const [action, handler] of actionHandlers) {
@@ -371,14 +381,43 @@
         }
 
         function startExperience() {
-            landing.style.opacity = '0';
-            setTimeout(() => {
-                landing.style.display = 'none';
-                playerContainer.classList.add('active');
-                initMediaSession();
-                video.play().catch(e => console.log("Auto-play blocked"));
-                showControls(); // Ensure controls show up immediately
-            }, 1000);
+            const btn = document.getElementById('start-btn');
+            const icon = document.getElementById('start-icon');
+            const text = document.getElementById('start-text');
+            
+            // Show loading state
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.8';
+            icon.className = 'fas fa-spinner fa-spin';
+            text.innerText = 'Buffering...';
+
+            function proceed() {
+                landing.style.opacity = '0';
+                setTimeout(() => {
+                    landing.style.display = 'none';
+                    playerContainer.classList.add('active');
+                    initMediaSession();
+                    userPaused = false;
+                    video.play().catch(e => console.log("Auto-play blocked"));
+                    showControls(); // Ensure controls show up immediately
+                }, 1000);
+            }
+
+            // Check if already loaded enough
+            if (video.readyState >= 3) { // HAVE_FUTURE_DATA or HAVE_ENOUGH_DATA
+                setTimeout(proceed, 800); // Small delay for visual feedback
+            } else {
+                // Wait for the browser to confirm it can play through
+                video.addEventListener('canplaythrough', proceed, { once: true });
+                
+                // Fallback: If it takes more than 10s, proceed anyway
+                // (better to have some lag than be stuck forever on slow networks)
+                setTimeout(() => {
+                    if (landing.style.display !== 'none') {
+                        proceed();
+                    }
+                }, 10000);
+            }
         }
 
         function stopExperience() {
@@ -392,11 +431,11 @@
 
         function togglePlay() {
             if (video.paused) {
+                userPaused = false;
                 video.play();
-                playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
             } else {
+                userPaused = true;
                 video.pause();
-                playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
             }
         }
 
@@ -489,6 +528,17 @@
                 navigator.mediaSession.playbackState = "paused";
             }
             playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+            
+            // Background Playback Keep-Alive logic
+            // If the video was paused by the system (e.g., locking screen) and not by the user
+            if (document.hidden && !userPaused) {
+                setTimeout(() => {
+                    video.play().catch(e => {
+                        console.log("Background resume blocked by browser policy");
+                        // The media session notification is still there for the user to tap play
+                    });
+                }, 100);
+            }
         });
 
         video.addEventListener('timeupdate', () => {
