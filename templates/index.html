@@ -338,12 +338,45 @@
         
         let controlTimeout;
 
+        // Initialize Media Session metadata
+        function initMediaSession() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: 'Asma Ul Husna',
+                    artist: 'Experience',
+                    album: '99 Names of Allah',
+                    artwork: [
+                        { src: window.location.origin + '/asmaulhusna.jpg', sizes: '512x512', type: 'image/jpeg' }
+                    ]
+                });
+
+                const actionHandlers = [
+                    ['play', () => video.play()],
+                    ['pause', () => video.pause()],
+                    ['seekbackward', () => seek(-5)],
+                    ['seekforward', () => seek(5)],
+                    ['previoustrack', () => seek(-10)],
+                    ['nexttrack', () => seek(10)],
+                    ['stop', () => stopExperience()]
+                ];
+
+                for (const [action, handler] of actionHandlers) {
+                    try {
+                        navigator.mediaSession.setActionHandler(action, handler);
+                    } catch (error) {
+                        console.log(`The media session action "${action}" is not supported.`);
+                    }
+                }
+            }
+        }
+
         function startExperience() {
             landing.style.opacity = '0';
             setTimeout(() => {
                 landing.style.display = 'none';
                 playerContainer.classList.add('active');
-                video.play();
+                initMediaSession();
+                video.play().catch(e => console.log("Auto-play blocked"));
                 showControls(); // Ensure controls show up immediately
             }, 1000);
         }
@@ -442,6 +475,39 @@
 
         document.addEventListener('mousemove', showControls);
         document.addEventListener('touchstart', showControls, {passive: true});
+
+        // Media Session & Video Event Listeners
+        video.addEventListener('play', () => {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = "playing";
+            }
+            playPauseBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        });
+
+        video.addEventListener('pause', () => {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = "paused";
+            }
+            playPauseBtn.innerHTML = '<i class="fas fa-play"></i>';
+        });
+
+        video.addEventListener('timeupdate', () => {
+            if ('mediaSession' in navigator && video.duration) {
+                navigator.mediaSession.setPositionState({
+                    duration: video.duration,
+                    playbackRate: video.playbackRate,
+                    position: video.currentTime
+                });
+            }
+        });
+
+        // Try to keep playing in background for some mobile browsers
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && !video.paused) {
+                // Some browsers pause automatically, we give it a nudge if needed
+                // But usually Media Session is enough to show the play button on lock screen
+            }
+        });
 
         // Loop handling
         video.onended = () => {
