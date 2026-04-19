@@ -183,15 +183,22 @@
             background: transparent;
             border: none;
             color: #fff;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             cursor: pointer;
-            transition: transform 0.2s;
-            width: 40px;
+            transition: transform 0.2s, color 0.2s;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-family: inherit;
             pointer-events: auto;
+            border-radius: 50%;
+        }
+
+        .control-btn:active {
+            background: rgba(255, 255, 255, 0.1);
+            transform: scale(0.9);
         }
 
         .control-btn:hover {
@@ -255,14 +262,16 @@
         }
         @media (max-width: 600px) {
             .content { padding: 20px; }
-            h1 { font-size: 3rem; }
-            .loop-tag { font-size: 1.2rem; }
-            p { font-size: 1rem; margin-bottom: 30px; }
-            .btn-start { width: 100%; justify-content: center; padding: 15px 30px; font-size: 1rem; }
-            .btn-group { flex-direction: column; width: 100%; }
-            .controls { padding: 20px; }
-            .controls-row { gap: 15px; }
-            input[type="range"] { width: 80px; }
+            h1 { font-size: 3.5rem; }
+            .loop-tag { font-size: 1.4rem; }
+            p { font-size: 1.1rem; margin-bottom: 30px; }
+            .btn-start { width: 100%; justify-content: center; padding: 20px 30px; font-size: 1.2rem; }
+            .btn-group { flex-direction: column; width: 100%; gap: 15px; }
+            .controls { padding: 40px 20px; background: linear-gradient(transparent 40%, rgba(0, 0, 0, 0.9)); }
+            .controls-row { gap: 10px; flex-wrap: wrap; }
+            .control-btn { font-size: 2.2rem; width: 70px; height: 70px; }
+            input[type="range"] { width: 120px; height: 10px; }
+            .volume-wrap { width: 100%; justify-content: center; margin-top: 20px; }
         }
 
         /* Loading Spinner */
@@ -347,6 +356,23 @@
         
         let controlTimeout;
         let userPaused = true;
+        let audioCtx;
+
+        function startSilentAudio() {
+            try {
+                if (!audioCtx) {
+                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                const buffer = audioCtx.createBuffer(1, 1, 22050);
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.loop = true;
+                source.connect(audioCtx.destination);
+                source.start();
+            } catch (e) {
+                console.log("Silent audio failed");
+            }
+        }
 
         // Initialize Media Session metadata
         function initMediaSession() {
@@ -397,9 +423,10 @@
                     landing.style.display = 'none';
                     playerContainer.classList.add('active');
                     initMediaSession();
+                    startSilentAudio();
                     userPaused = false;
                     video.play().catch(e => console.log("Auto-play blocked"));
-                    showControls(); // Ensure controls show up immediately
+                    showControls(); 
                 }, 1000);
             }
 
