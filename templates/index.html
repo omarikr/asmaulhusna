@@ -40,31 +40,17 @@
             align-items: center;
             justify-content: center;
             text-align: center;
-            background: #000;
+            background: url('asmaulhusna.jpg') no-repeat center center;
+            background-size: cover;
             z-index: 100;
             transition: opacity 1s ease, visibility 1s;
-            overflow: hidden;
-        }
-
-        .bg-video {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            min-width: 100%;
-            min-height: 100%;
-            width: auto;
-            height: auto;
-            transform: translate(-50%, -50%);
-            object-fit: cover;
-            z-index: 0;
-            opacity: 0.6;
         }
 
         .landing::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle, rgba(0,0,0,0.2) 0%, rgba(0,0,0,0.7) 100%);
+            background: radial-gradient(circle, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.7) 100%);
             z-index: 1;
         }
 
@@ -128,13 +114,6 @@
             display: inline-flex;
             align-items: center;
             gap: 12px;
-        }
-
-        .btn-start:hover {
-            background: #fff;
-            color: #000;
-            transform: scale(1.05);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
         }
 
         /* Video Player Container */
@@ -277,9 +256,6 @@
 
     <!-- Landing Page -->
     <section class="landing" id="landing">
-        <video class="bg-video" autoplay muted loop playsinline>
-            <source src="https://videotourl.com/videos/1776615984336-b74d9769-c48c-4f5c-8bb0-2cf379ec703c.mp4" type="video/mp4">
-        </video>
         <div class="content">
             <div class="experience-tag">Experience</div>
             <h1>Asma Ul Husna</h1>
@@ -303,7 +279,7 @@
         </button>
         
         <video id="asma-video" loop playsinline>
-            <source src="asmaulhusna.mp4" type="video/mp4">
+            <source src="https://videotourl.com/videos/1776615984336-b74d9769-c48c-4f5c-8bb0-2cf379ec703c.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
 
