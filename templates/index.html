@@ -108,12 +108,21 @@
             border-radius: 50px;
             font-size: 1.1rem;
             font-weight: 600;
+            font-family: 'Outfit', sans-serif;
             cursor: pointer;
             backdrop-filter: blur(10px);
             transition: var(--transition);
             display: inline-flex;
             align-items: center;
             gap: 12px;
+            text-decoration: none;
+        }
+
+        .btn-start:hover {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+            color: var(--accent);
         }
 
         /* Video Player Container */
@@ -145,16 +154,21 @@
         .controls {
             position: absolute;
             inset: 0;
-            background: linear-gradient(transparent 70%, rgba(0, 0, 0, 0.6));
+            background: linear-gradient(transparent 60%, rgba(0, 0, 0, 0.8));
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
-            padding: 40px;
+            padding: 60px 40px;
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transition: opacity 0.5s ease;
             z-index: 60;
             user-select: none;
-            pointer-events: auto; /* Ensure buttons are clickable */
+            pointer-events: none;
+        }
+
+        .controls.visible {
+            opacity: 1;
+            pointer-events: auto;
         }
 
         .controls-row {
@@ -176,6 +190,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-family: inherit;
+            pointer-events: auto;
         }
 
         .control-btn:hover {
@@ -230,6 +246,7 @@
             z-index: 70;
             backdrop-filter: blur(10px);
             transition: var(--transition);
+            font-family: inherit;
         }
 
         .exit-btn:hover {
@@ -258,11 +275,11 @@
             <h1>Asma Ul Husna</h1>
             <span class="loop-tag">On Loop</span>
             <p>This website is made for relaxing and listening to 99 names of Allah without limits, ads. It will play with adjustable volume and on loop. You can close it any time or even open it on full screen for a better experience.</p>
-            <div class="btn-group" style="display: flex; gap: 15px; justify-content: center;">
+            <div class="btn-group" style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
                 <button class="btn-start" onclick="startExperience()">
                     <i class="fas fa-play"></i> Get Started
                 </button>
-                <a href="https://github.com/omarikr/asmaulhusna" target="_blank" class="btn-start" style="text-decoration: none; background: rgba(255, 255, 255, 0.05);">
+                <a href="https://github.com/omarikr/asmaulhusna" target="_blank" class="btn-start" style="background: rgba(255, 255, 255, 0.05);">
                     <i class="fab fa-github"></i> Source
                 </a>
             </div>
@@ -276,6 +293,7 @@
         </button>
         
         <video id="asma-video" loop playsinline>
+            <source src="asmaulhusna.mp4" type="video/mp4">
             <source src="https://videotourl.com/videos/1776615984336-b74d9769-c48c-4f5c-8bb0-2cf379ec703c.mp4" type="video/mp4">
             Your browser does not support the video tag.
         </video>
@@ -326,6 +344,7 @@
                 landing.style.display = 'none';
                 playerContainer.classList.add('active');
                 video.play();
+                showControls(); // Ensure controls show up immediately
             }, 1000);
         }
 
@@ -417,7 +436,7 @@
                 clearTimeout(controlTimeout);
                 controlTimeout = setTimeout(() => {
                     controls.classList.remove('visible');
-                }, 3000);
+                }, 5000);
             }
         }
 
